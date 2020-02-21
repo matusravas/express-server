@@ -7,7 +7,7 @@ const PostSchema = new Schema({
     createdAt: Date,
     updatedAt: Date,
     available: Boolean,
-    fans: [{ type: Schema.Types.ObjectId, ref: 'Users' }] //Todo check populate method mongoose
+    // fans: [{ type: Schema.Types.ObjectId, ref: 'Users' }] //Todo check populate method mongoose
 }, { versionKey: false })
 
 

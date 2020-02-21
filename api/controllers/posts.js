@@ -1,4 +1,4 @@
-const Post = require("../models/posts");
+const Post = require("../models/post");
 const response = require("../helpers/response_sender");
 
 exports.add_one = ((req, res) => {
@@ -36,7 +36,7 @@ exports.add_more = ((req, res) => {
 });
 
 exports.get_all = ((req, res) => {
-    Post.find().then(data => response(res, 200, { posts: data })
+    Post.find().exec().then(data => response(res, 200, { posts: data })
     ).catch(err => response(res, 400, { error: { status: "Error while getting posts", message: err } }))
 });
 

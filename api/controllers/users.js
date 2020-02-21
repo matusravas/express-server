@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwtGen = require("../middleware/jwt_generator");
-const User = require("../models/user.model");
+const User = require("../models/user");
 
 exports.get_all = ((req, res) => {
     User.find((err, data) => {
@@ -53,26 +53,9 @@ exports.get_all_by_login = ((req, res) => {
     }).select("-password");
 })
 
-exports.create_new = ((req, res) => {
-    const { login, name, password, mail } = req.body;
-    // User.findOne({ login: login }, (err, user) => {
-    //     if (err) {
-    //         res.status(500).json({
-    //             error: {
-    //                 status: "Error in getting user",
-    //                 message: err
-    //             }
-    //         });
-    //         return;
-    //     }
-    //     if (user) {
-    //         res.status(401).json({
-    //             status: `User with login: ${login} already exists`
-    //         });
-    //         return;
-    //     }
-    // else {
-    bcrypt.hash(password, 10, (err, hash) => {
+exports.add_one = ((req, res) => {
+    let user = req.body;
+    bcrypt.hash(user.password, 10, (err, hash) => {
         if (err) {
             res.status(500).json({
                 error: {
@@ -82,39 +65,29 @@ exports.create_new = ((req, res) => {
             });
             return;
         }
-        let user = new User({
-            login: login,
-            password: hash,
-            name: name,
-            mail: mail
-        });
-        // user.save((err) => {
-
-        User.create(user, (err) => {
-            if (err) {
-                res.status(400).json({
-                    error: {
-                        status: "Failed to insert",
-                        message: err.errmsg
-                    }
-                });
-                return;
-            }
-            else {
-                delete user.password;
-                const token = jwtGen.generateJWT(user)
-                res.status(201).json({
-                    data: {
-                        status: "User successfully created",
-                        user: user,
-                        token: token
-                    }
-                });
-            }
+        user.password = hash;
+        console.log(user);
+        User.create(new User(user)).then(() => {
+            delete user.password;
+            const token = jwtGen.generateJWT(user);
+            res.status(201).json({
+                data: {
+                    status: "User successfully created",
+                    user: user,
+                    token: token
+                }
+            });
+        }).catch(err => {
+            res.status(400).json({
+                error: {
+                    status: "Failed to insert",
+                    message: err.errmsg
+                }
+            });
+            return;
         });
     });
-    // }
-    // });
+
 });
 
 exports.auth = ((req, res) => {
